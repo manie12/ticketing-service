@@ -1,0 +1,29 @@
+{
+  "name": "ticketing-outbox-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max": "1",
+    "database.hostname": "ticketing-db-1",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "database.dbname": "ticketing",
+    "topic.prefix": "cdc",
+    "plugin.name": "pgoutput",
+    "slot.name": "dbz_ticketing_slot",
+    "publication.name": "dbz_ticketing_pub",
+    "publication.autocreate.mode": "filtered",
+    "snapshot.mode": "initial",
+    "snapshot.locking.mode": "none",
+    "schema.include.list": "ticketing",
+    "table.include.list": "ticketing.outbox_event",
+    "tombstones.on.delete": "false",
+    "heartbeat.interval.ms": "10000",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.ticketing",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "false"
+  }
+}

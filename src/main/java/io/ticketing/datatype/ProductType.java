@@ -44,28 +44,6 @@ public enum ProductType {
     // --- Add-on only catalog items ---
     ADDON_ONLY(Category.ADDON, "Add-on Only");
 
-    /**
-     * Categories to help group logic and filtering
-     */
-    public enum Category {
-        TICKETING("Ticketing & Admission"),
-        EVENT("Events"),
-        TOUR_ACTIVITY("Tours & Activities"),
-        RENTAL_RESOURCE("Rentals & Resources"),
-        MEMBERSHIP_SUBSCRIPTION("Memberships & Subscriptions"),
-        VOUCHER_CREDIT("Vouchers & Credits"),
-        ADDON("Add-ons");
-
-        private final String displayName;
-
-        Category(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-    }
 
     private final Category category;
     private final String displayName;
