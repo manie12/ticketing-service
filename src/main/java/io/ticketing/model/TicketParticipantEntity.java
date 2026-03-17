@@ -1,6 +1,5 @@
 package io.ticketing.model;
 
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -9,23 +8,24 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * R2DBC Entity for: ticket_participants
- *
- * DDL recap:
- *  ticket_participants(
- *    id uuid PK,
- *    tenant_id uuid NOT NULL,
- *    ticket_id uuid NOT NULL,
- *    participant_type text NOT NULL,  -- CUSTOMER|AGENT|EXTERNAL|SYSTEM
- *    participant_ref text NOT NULL,
- *    role text NOT NULL,              -- REQUESTER|CC|WATCHER
- *    is_active boolean NOT NULL default true,
- *    created_at timestamptz NOT NULL default now()
- *  )
+ * R2DBC entity for ticketing.ticket_participants
+ * <p>
+ * DDL:
+ * ticket_participants(
+ * tenant_id uuid NOT NULL FK tenants(id),
+ * ticket_id uuid NOT NULL FK tickets(id) ON DELETE CASCADE,
+ * participant_type varchar(20) NOT NULL check in (CUSTOMER,AGENT,SYSTEM),
+ * participant_id uuid NOT NULL,
+ * role varchar(30) NOT NULL default REQUESTER check in (REQUESTER,ASSIGNEE,WATCHER),
+ * is_primary boolean NOT NULL default false,
+ * added_at timestamptz NOT NULL default now(),
+ * primary key (tenant_id, ticket_id, participant_type, participant_id)
+ * )
+ * <p>
+ * Note: composite primary key -> no single @Id field.
  */
-@Table("ticket_participants")
+@Table(schema = "ticketing", name = "ticket_participants")
 public class TicketParticipantEntity {
-
     @Id
     @Column("id")
     private UUID id;
@@ -37,70 +37,114 @@ public class TicketParticipantEntity {
     private UUID ticketId;
 
     @Column("participant_type")
-    private String participantType;
+    private String participantType; // CUSTOMER | AGENT | SYSTEM
 
-    @Column("participant_ref")
-    private String participantRef;
+    @Column("customer_email")
+    private String customerEmail;
 
     @Column("role")
-    private String role;
+    private String role; // REQUESTER | ASSIGNEE | WATCHER
 
-    @Column("is_active")
-    private Boolean isActive;
+    @Column("is_primary")
+    private Boolean isPrimary;
 
-    @CreatedDate
-    @Column("created_at")
-    private OffsetDateTime createdAt;
+    @Column("added_at")
+    private OffsetDateTime addedAt;
 
-    public TicketParticipantEntity() {}
+    public TicketParticipantEntity() {
+    }
 
-    public TicketParticipantEntity(UUID id, UUID tenantId, UUID ticketId,
-                                   String participantType, String participantRef,
-                                   String role, Boolean isActive, OffsetDateTime createdAt) {
-        this.id = id;
+    public TicketParticipantEntity(UUID id,UUID tenantId, UUID ticketId, String participantType, String customerEmail,
+                                   String role, Boolean isPrimary, OffsetDateTime addedAt) {
+        this.id = UUID.randomUUID();
         this.tenantId = tenantId;
         this.ticketId = ticketId;
         this.participantType = participantType;
-        this.participantRef = participantRef;
+        this.customerEmail = customerEmail;
         this.role = role;
-        this.isActive = isActive;
-        this.createdAt = createdAt;
+        this.isPrimary = isPrimary;
+        this.addedAt = addedAt;
     }
 
-    public static TicketParticipantEntity newParticipant(UUID tenantId, UUID ticketId,
-                                                         String participantType, String participantRef, String role) {
+    public static TicketParticipantEntity requester(UUID tenantId, UUID ticketId, String customerEmail) {
         TicketParticipantEntity p = new TicketParticipantEntity();
         p.id = UUID.randomUUID();
         p.tenantId = tenantId;
         p.ticketId = ticketId;
-        p.participantType = participantType;
-        p.participantRef = participantRef;
-        p.role = role;
-        p.isActive = true;
+        p.participantType = "";
+        p.customerEmail = customerEmail;
+        p.role = "";
+        p.isPrimary = true;
+        p.addedAt = OffsetDateTime.now();
         return p;
     }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getId() { return id; }
-    public TicketParticipantEntity setId(UUID id) { this.id = id; return this; }
+    public TicketParticipantEntity setId(UUID id) {
+        this.id = id;
+        return this;
+    }
 
-    public UUID getTenantId() { return tenantId; }
-    public TicketParticipantEntity setTenantId(UUID tenantId) { this.tenantId = tenantId; return this; }
+    public UUID getTenantId() {
+        return tenantId;
+    }
 
-    public UUID getTicketId() { return ticketId; }
-    public TicketParticipantEntity setTicketId(UUID ticketId) { this.ticketId = ticketId; return this; }
+    public TicketParticipantEntity setTenantId(UUID tenantId) {
+        this.tenantId = tenantId;
+        return this;
+    }
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
 
-    public String getParticipantType() { return participantType; }
-    public TicketParticipantEntity setParticipantType(String participantType) { this.participantType = participantType; return this; }
+    public TicketParticipantEntity setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+        return this;
+    }
+    public UUID getTicketId() {
+        return ticketId;
+    }
 
-    public String getParticipantRef() { return participantRef; }
-    public TicketParticipantEntity setParticipantRef(String participantRef) { this.participantRef = participantRef; return this; }
+    public TicketParticipantEntity setTicketId(UUID ticketId) {
+        this.ticketId = ticketId;
+        return this;
+    }
 
-    public String getRole() { return role; }
-    public TicketParticipantEntity setRole(String role) { this.role = role; return this; }
+    public String getParticipantType() {
+        return participantType;
+    }
 
-    public Boolean getIsActive() { return isActive; }
-    public TicketParticipantEntity setIsActive(Boolean active) { isActive = active; return this; }
+    public TicketParticipantEntity setParticipantType(String participantType) {
+        this.participantType = participantType;
+        return this;
+    }
 
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public TicketParticipantEntity setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public String getRole() {
+        return role;
+    }
+
+    public TicketParticipantEntity setRole(String role) {
+        this.role = role;
+        return this;
+    }
+
+    public Boolean getIsPrimary() {
+        return isPrimary;
+    }
+
+    public TicketParticipantEntity setIsPrimary(Boolean primary) {
+        isPrimary = primary;
+        return this;
+    }
+
+    public OffsetDateTime getAddedAt() {
+        return addedAt;
+    }
+
+    public TicketParticipantEntity setAddedAt(OffsetDateTime addedAt) {
+        this.addedAt = addedAt;
+        return this;
+    }
 }

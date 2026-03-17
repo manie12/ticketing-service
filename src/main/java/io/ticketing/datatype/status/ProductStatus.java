@@ -1,4 +1,4 @@
-package io.ticketing.datatype;
+package io.ticketing.datatype.status;
 
 public enum ProductStatus {
     /**
