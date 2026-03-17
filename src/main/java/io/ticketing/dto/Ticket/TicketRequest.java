@@ -19,7 +19,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateTicketRequest {
+public class TicketRequest {
 
     @NotBlank
     private String requestId;

@@ -1,33 +1,39 @@
 package io.ticketing.model;
 
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * R2DBC Entity for: categories
- * (Top-5 addon table used by sla_policies and tickets.category_id)
+ * R2DBC entity for ticketing.categories
+ *
+ * DDL (summary):
+ * categories(
+ *   id uuid PK,
+ *   tenant_id uuid NOT NULL FK tenants(id),
+ *   code varchar(60) NOT NULL (A-Z0-9_),
+ *   name varchar(160) NOT NULL,
+ *   description varchar(500) NULL,
+ *   is_active boolean NOT NULL default true,
+ *   allowed_channel_codes text[] NULL,
+ *   created_at timestamptz NOT NULL default now(),
+ *   updated_at timestamptz NOT NULL default now(),
+ *   unique(tenant_id, code)
+ * )
  */
-@Table("categories")
+@Table(schema = "ticketing", name = "categories")
 public class CategoryEntity {
 
     @Id
     @Column("id")
     private UUID id;
 
-    @Column("scope")
-    private String scope;      // GLOBAL | TENANT
-
     @Column("tenant_id")
-    private UUID tenantId;     // nullable when scope=GLOBAL
-
-    @Column("public_id")
-    private String publicId;
+    private UUID tenantId;
 
     @Column("code")
     private String code;
@@ -38,78 +44,55 @@ public class CategoryEntity {
     @Column("description")
     private String description;
 
-    @Column("parent_id")
-    private UUID parentId;
-
     @Column("is_active")
     private Boolean isActive;
 
-    @Column("sort_order")
-    private Integer sortOrder;
+    /**
+     * Postgres text[].
+     * NOTE: Depending on your R2DBC driver/version, mapping text[] to List<String>
+     * may require custom converters. If you hit issues, change this field to String
+     * and store comma-separated values.
+     */
+    @Column("allowed_channel_codes")
+    private List<String> allowedChannelCodes;
 
-    @CreatedDate
     @Column("created_at")
     private OffsetDateTime createdAt;
 
-    @LastModifiedDate
     @Column("updated_at")
     private OffsetDateTime updatedAt;
 
     public CategoryEntity() {}
 
-    public CategoryEntity(UUID id, String scope, UUID tenantId, String publicId, String code,
-                          String name, String description, UUID parentId, Boolean isActive,
-                          Integer sortOrder, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public CategoryEntity(UUID id, UUID tenantId, String code, String name, String description,
+                          Boolean isActive, List<String> allowedChannelCodes,
+                          OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.id = id;
-        this.scope = scope;
         this.tenantId = tenantId;
-        this.publicId = publicId;
         this.code = code;
         this.name = name;
         this.description = description;
-        this.parentId = parentId;
         this.isActive = isActive;
-        this.sortOrder = sortOrder;
+        this.allowedChannelCodes = allowedChannelCodes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public static CategoryEntity newGlobal(String publicId, String code, String name) {
+    public static CategoryEntity newCategory(UUID tenantId, String code, String name) {
         CategoryEntity c = new CategoryEntity();
         c.id = UUID.randomUUID();
-        c.scope = "GLOBAL";
-        c.publicId = publicId;
-        c.code = code;
-        c.name = name;
-        c.isActive = true;
-        c.sortOrder = 0;
-        return c;
-    }
-
-    public static CategoryEntity newTenant(UUID tenantId, String publicId, String code, String name) {
-        CategoryEntity c = new CategoryEntity();
-        c.id = UUID.randomUUID();
-        c.scope = "TENANT";
         c.tenantId = tenantId;
-        c.publicId = publicId;
         c.code = code;
         c.name = name;
         c.isActive = true;
-        c.sortOrder = 0;
         return c;
     }
 
     public UUID getId() { return id; }
     public CategoryEntity setId(UUID id) { this.id = id; return this; }
 
-    public String getScope() { return scope; }
-    public CategoryEntity setScope(String scope) { this.scope = scope; return this; }
-
     public UUID getTenantId() { return tenantId; }
     public CategoryEntity setTenantId(UUID tenantId) { this.tenantId = tenantId; return this; }
-
-    public String getPublicId() { return publicId; }
-    public CategoryEntity setPublicId(String publicId) { this.publicId = publicId; return this; }
 
     public String getCode() { return code; }
     public CategoryEntity setCode(String code) { this.code = code; return this; }
@@ -120,14 +103,14 @@ public class CategoryEntity {
     public String getDescription() { return description; }
     public CategoryEntity setDescription(String description) { this.description = description; return this; }
 
-    public UUID getParentId() { return parentId; }
-    public CategoryEntity setParentId(UUID parentId) { this.parentId = parentId; return this; }
-
     public Boolean getIsActive() { return isActive; }
     public CategoryEntity setIsActive(Boolean active) { isActive = active; return this; }
 
-    public Integer getSortOrder() { return sortOrder; }
-    public CategoryEntity setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; return this; }
+    public List<String> getAllowedChannelCodes() { return allowedChannelCodes; }
+    public CategoryEntity setAllowedChannelCodes(List<String> allowedChannelCodes) {
+        this.allowedChannelCodes = allowedChannelCodes;
+        return this;
+    }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public CategoryEntity setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }

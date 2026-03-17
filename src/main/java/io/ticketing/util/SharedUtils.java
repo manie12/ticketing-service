@@ -2,6 +2,8 @@ package io.ticketing.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ticketing.datatype.TicketErrorType;
+import io.ticketing.exception.TicketException;
 import jakarta.validation.Validator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +12,11 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 import java.util.random.RandomGenerator;
 
 @Slf4j
@@ -99,6 +103,28 @@ public class SharedUtils {
             }
         } catch (Exception e) {
             return false;
+        }
+    }
+    public UUID generateTicketId() {
+        return UUID.randomUUID();
+    }
+
+    /**
+     * Generates a public reference ID for customers.
+     *
+     * MVP generator: TCK-YYYY-<8chars>
+     * In production, consider a DB sequence for monotonic IDs per tenant or global.
+     */
+    public String generatePublicId(OffsetDateTime nowUtc) {
+        String year = String.valueOf(nowUtc.getYear());
+        String shortId = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        return "TCK-" + year + "-" + shortId;
+    }
+    public UUID parseUuidOrThrow(String raw, TicketErrorType errorType) {
+        try {
+            return UUID.fromString(raw);
+        } catch (Exception e) {
+            throw TicketException.of(errorType);
         }
     }
 }

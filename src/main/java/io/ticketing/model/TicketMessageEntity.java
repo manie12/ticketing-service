@@ -1,18 +1,30 @@
 package io.ticketing.model;
 
-// ============================================================
-// TICKET MESSAGES
-// ============================================================
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
-@Table("ticket_messages")
-class TicketMessageEntity {
+
+/**
+ * R2DBC entity for ticketing.ticket_messages
+ * <p>
+ * DDL (summary):
+ * ticket_messages(
+ * id uuid PK,
+ * tenant_id uuid NOT NULL FK tenants(id),
+ * ticket_id uuid NOT NULL FK tickets(id) ON DELETE CASCADE,
+ * sender_type varchar(20) NOT NULL check in (CUSTOMER,AGENT,SYSTEM),
+ * sender_id uuid NULL,
+ * message_type varchar(30) NOT NULL default TEXT check in (TEXT,DESCRIPTION,SYSTEM_NOTE),
+ * body text NOT NULL,
+ * channel_id uuid NULL FK channels(id),
+ * created_at timestamptz NOT NULL default now()
+ * )
+ */
+@Table(schema = "ticketing", name = "ticket_messages")
+public class TicketMessageEntity {
 
     @Id
     @Column("id")
@@ -24,71 +36,131 @@ class TicketMessageEntity {
     @Column("ticket_id")
     private UUID ticketId;
 
-    @Column("public_id")
-    private String publicId;
+    @Column("sender_type")
+    private String senderType; // CUSTOMER | AGENT | SYSTEM
 
-    @Column("author_type")
-    private String authorType;     // CUSTOMER | AGENT | SYSTEM
+    @Column("sender_email")
+    private String senderEmail;     // nullable
 
-    @Column("author_ref")
-    private String authorRef;
+    @Column("message_type")
+    private String messageType; // TEXT | DESCRIPTION | SYSTEM_NOTE
 
     @Column("body")
     private String body;
 
-    @CreatedDate
+    @Column("channel_code")
+    private String channelCode;    // nullable
+
     @Column("created_at")
     private OffsetDateTime createdAt;
 
-    public TicketMessageEntity() {}
+    public TicketMessageEntity() {
+    }
 
-    public TicketMessageEntity(UUID id, UUID tenantId, UUID ticketId, String publicId,
-                               String authorType, String authorRef, String body, OffsetDateTime createdAt) {
+    public TicketMessageEntity(UUID id, UUID tenantId, UUID ticketId, String senderType, String senderEmail,
+                               String messageType, String body, String channelCode, OffsetDateTime createdAt) {
         this.id = id;
         this.tenantId = tenantId;
         this.ticketId = ticketId;
-        this.publicId = publicId;
-        this.authorType = authorType;
-        this.authorRef = authorRef;
+        this.senderType = senderType;
+        this.senderEmail = senderEmail;
+        this.messageType = messageType;
         this.body = body;
+        this.channelCode = channelCode;
         this.createdAt = createdAt;
     }
 
-    public static TicketMessageEntity newMessage(UUID tenantId, UUID ticketId, String publicId,
-                                                 String authorType, String authorRef, String body) {
+    public static TicketMessageEntity newCustomerDescription(UUID tenantId, UUID ticketId, String senderEmail, String channelCode, String body) {
         TicketMessageEntity m = new TicketMessageEntity();
         m.id = UUID.randomUUID();
         m.tenantId = tenantId;
         m.ticketId = ticketId;
-        m.publicId = publicId;
-        m.authorType = authorType;
-        m.authorRef = authorRef;
+        m.senderType = "";
+        m.senderEmail = senderEmail;
+        m.messageType = "DESCRIPTION";
         m.body = body;
+        m.channelCode = channelCode;
         return m;
     }
 
-    public UUID getId() { return id; }
-    public TicketMessageEntity setId(UUID id) { this.id = id; return this; }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getTenantId() { return tenantId; }
-    public TicketMessageEntity setTenantId(UUID tenantId) { this.tenantId = tenantId; return this; }
+    public TicketMessageEntity setId(UUID id) {
+        this.id = id;
+        return this;
+    }
 
-    public UUID getTicketId() { return ticketId; }
-    public TicketMessageEntity setTicketId(UUID ticketId) { this.ticketId = ticketId; return this; }
+    public UUID getTenantId() {
+        return tenantId;
+    }
 
-    public String getPublicId() { return publicId; }
-    public TicketMessageEntity setPublicId(String publicId) { this.publicId = publicId; return this; }
+    public TicketMessageEntity setTenantId(UUID tenantId) {
+        this.tenantId = tenantId;
+        return this;
+    }
 
-    public String getAuthorType() { return authorType; }
-    public TicketMessageEntity setAuthorType(String authorType) { this.authorType = authorType; return this; }
+    public UUID getTicketId() {
+        return ticketId;
+    }
 
-    public String getAuthorRef() { return authorRef; }
-    public TicketMessageEntity setAuthorRef(String authorRef) { this.authorRef = authorRef; return this; }
+    public TicketMessageEntity setTicketId(UUID ticketId) {
+        this.ticketId = ticketId;
+        return this;
+    }
 
-    public String getBody() { return body; }
-    public TicketMessageEntity setBody(String body) { this.body = body; return this; }
+    public String getSenderType() {
+        return senderType;
+    }
 
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public TicketMessageEntity setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public TicketMessageEntity setSenderType(String senderType) {
+        this.senderType = senderType;
+        return this;
+    }
+
+    public String getSenderEmail() {
+        return senderEmail;
+    }
+
+    public TicketMessageEntity setSenderEmail(String senderEmail) {
+        this.senderEmail = senderEmail;
+        return this;
+    }
+
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public TicketMessageEntity setMessageType(String messageType) {
+        this.messageType = messageType;
+        return this;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public TicketMessageEntity setBody(String body) {
+        this.body = body;
+        return this;
+    }
+
+    public String getChannelCode() {
+        return channelCode;
+    }
+
+    public TicketMessageEntity setChannelCode(String channelCode) {
+        this.channelCode = channelCode;
+        return this;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public TicketMessageEntity setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
 }
-
