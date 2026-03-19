@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -27,7 +28,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "settings")
-public class SettingEntity {
+public class SettingEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -72,6 +73,9 @@ public class SettingEntity {
 
     @Column("updated_at")
     private OffsetDateTime updatedAt;
+
+    @Transient
+    private boolean isNew = false;
 
     public SettingEntity() {}
 
@@ -120,6 +124,16 @@ public class SettingEntity {
     }
 
     // Getters / Setters
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public SettingEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() { return id; }
     public SettingEntity setId(UUID id) { this.id = id; return this; }
 

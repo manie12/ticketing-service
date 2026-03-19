@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -8,11 +9,14 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Table("outbox_event")
-public class OutboxEvent {
+public class OutboxEvent implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
     private UUID id;
+
+    @Column("tenant_id")
+    private UUID tenantId;
 
     @Column("aggregate_type")
     private String aggregateType;     // ORDER, TICKET, PRODUCT
@@ -39,6 +43,9 @@ public class OutboxEvent {
     @Column("occurred_at")
     private OffsetDateTime occurredAt;
 
+    @Transient
+    private boolean isNew = false;
+
     public OutboxEvent() {
     }
 
@@ -61,68 +68,93 @@ public class OutboxEvent {
     }
 
     // Getters/setters (R2DBC uses them or reflection depending on setup)
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
 
+    public OutboxEvent markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public OutboxEvent setId(UUID id) {
         this.id = id;
+        return this;
+    }
+    public UUID getTenantId() {
+        return tenantId;
     }
 
+    public OutboxEvent setTenantId(UUID tenantId) {
+        this.tenantId = tenantId;
+        return this;
+    }
     public String getAggregateType() {
         return aggregateType;
     }
 
-    public void setAggregateType(String aggregateType) {
+    public OutboxEvent setAggregateType(String aggregateType) {
         this.aggregateType = aggregateType;
+        return this;
     }
 
     public String getAggregateId() {
         return aggregateId;
     }
 
-    public void setAggregateId(String aggregateId) {
+    public OutboxEvent setAggregateId(String aggregateId) {
         this.aggregateId = aggregateId;
+        return this;
     }
 
     public String getEventType() {
         return eventType;
     }
 
-    public void setEventType(String eventType) {
+    public OutboxEvent setEventType(String eventType) {
         this.eventType = eventType;
+        return this;
     }
 
     public Integer getEventVersion() {
         return eventVersion;
     }
 
-    public void setEventVersion(Integer eventVersion) {
+    public OutboxEvent setEventVersion(Integer eventVersion) {
         this.eventVersion = eventVersion;
+        return this;
     }
 
     public String getPayload() {
         return payload;
     }
 
-    public void setPayload(String payload) {
+    public OutboxEvent setPayload(String payload) {
         this.payload = payload;
+        return this;
     }
 
     public String getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(String correlationId) {
+    public OutboxEvent setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
+        return this;
     }
 
     public OffsetDateTime getOccurredAt() {
         return occurredAt;
     }
 
-    public void setOccurredAt(OffsetDateTime occurredAt) {
+    public OutboxEvent setOccurredAt(OffsetDateTime occurredAt) {
         this.occurredAt = occurredAt;
+        return this;
     }
+
 }

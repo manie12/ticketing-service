@@ -1,12 +1,15 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.domain.Persistable;
 
 /**
  * R2DBC entity for ticketing.business_rules
@@ -27,7 +30,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "business_rules")
-public class BusinessRuleEntity {
+public class BusinessRuleEntity implements Persistable<UUID> {
 
     @Id
     @Column("id")
@@ -75,6 +78,9 @@ public class BusinessRuleEntity {
     @Column("updated_at")
     private OffsetDateTime updatedAt;
 
+    @Transient
+    private boolean isNew = false;
+
     public BusinessRuleEntity() {}
 
     public BusinessRuleEntity(UUID id, UUID tenantId, String name, Boolean isEnabled, Integer priority,
@@ -106,7 +112,20 @@ public class BusinessRuleEntity {
     }
 
     public UUID getId() { return id; }
+
     public BusinessRuleEntity setId(UUID id) { this.id = id; return this; }
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public BusinessRuleEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
+
 
     public UUID getTenantId() { return tenantId; }
     public BusinessRuleEntity setTenantId(UUID tenantId) { this.tenantId = tenantId; return this; }

@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -26,7 +27,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "categories")
-public class CategoryEntity {
+public class CategoryEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -47,6 +48,8 @@ public class CategoryEntity {
     @Column("is_active")
     private Boolean isActive;
 
+    @Transient
+    private boolean isNew = false;
     /**
      * Postgres text[].
      * NOTE: Depending on your R2DBC driver/version, mapping text[] to List<String>
@@ -61,6 +64,7 @@ public class CategoryEntity {
 
     @Column("updated_at")
     private OffsetDateTime updatedAt;
+
 
     public CategoryEntity() {}
 
@@ -87,7 +91,16 @@ public class CategoryEntity {
         c.isActive = true;
         return c;
     }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
 
+    public CategoryEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() { return id; }
     public CategoryEntity setId(UUID id) { this.id = id; return this; }
 
