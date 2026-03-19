@@ -14,20 +14,21 @@ spring:
     name: ticketing-service
 
   r2dbc:
-    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5433/ticketing}
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5433/ticketing?schema=ticketing}
     username: ${SPRING_R2DBC_USERNAME:postgres}
     password: ${SPRING_R2DBC_PASSWORD:postgres}
     properties:
       schema: ${SPRING_R2DBC_SCHEMA:ticketing}
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
     url: ${SPRING_FLYWAY_URL:jdbc:postgresql://localhost:5433/ticketing}
     user: ${SPRING_FLYWAY_USER:postgres}
     password: ${SPRING_FLYWAY_PASSWORD:postgres}
     schemas: ${SPRING_FLYWAY_SCHEMA:ticketing}
     baseline-on-migrate: true
+    clean-on-start: ${SPRING_FLYWAY_CLEAN_ON_START:true}   # Set to false after first successful run
 
   kafka:
     bootstrap-servers: localhost:9094

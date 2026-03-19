@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-public interface ChannelRepository extends ReactiveCrudRepository<ChannelEntity, String> {
+public interface ChannelRepository extends ReactiveCrudRepository<ChannelEntity, UUID> {
     Mono<ChannelEntity> findByTenantIdAndCode(UUID tenantId, String code);
 }

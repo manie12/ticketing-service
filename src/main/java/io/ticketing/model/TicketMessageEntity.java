@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -24,7 +25,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "ticket_messages")
-public class TicketMessageEntity {
+public class TicketMessageEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -53,6 +54,9 @@ public class TicketMessageEntity {
 
     @Column("created_at")
     private OffsetDateTime createdAt;
+
+    @Transient
+    private boolean isNew = false;
 
     public TicketMessageEntity() {
     }
@@ -83,6 +87,16 @@ public class TicketMessageEntity {
         return m;
     }
 
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public TicketMessageEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() {
         return id;
     }

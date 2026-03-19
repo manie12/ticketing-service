@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -25,7 +26,7 @@ import java.util.UUID;
  * Note: composite primary key -> no single @Id field.
  */
 @Table(schema = "ticketing", name = "ticket_participants")
-public class TicketParticipantEntity {
+public class TicketParticipantEntity implements org.springframework.data.domain.Persistable<UUID>{
     @Id
     @Column("id")
     private UUID id;
@@ -50,6 +51,9 @@ public class TicketParticipantEntity {
 
     @Column("added_at")
     private OffsetDateTime addedAt;
+
+    @Transient
+    private boolean isNew = false;
 
     public TicketParticipantEntity() {
     }
@@ -77,6 +81,16 @@ public class TicketParticipantEntity {
         p.isPrimary = true;
         p.addedAt = OffsetDateTime.now();
         return p;
+    }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public TicketParticipantEntity markNew() {
+        this.isNew = true;
+        return this;
     }
     public UUID getId() {
         return id;

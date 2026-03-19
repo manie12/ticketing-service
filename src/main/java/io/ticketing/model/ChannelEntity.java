@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -23,7 +24,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "channels")
-public class ChannelEntity {
+public class ChannelEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -41,6 +42,8 @@ public class ChannelEntity {
     @Column("is_enabled")
     private Boolean isEnabled;
 
+    @Transient
+    private boolean isNew = false;
     /**
      * jsonb - keep as String for simplicity (store JSON text).
      * If you want JsonNode, add converters later.
@@ -77,7 +80,16 @@ public class ChannelEntity {
         c.isEnabled = true;
         return c;
     }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
 
+    public ChannelEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() { return id; }
     public ChannelEntity setId(UUID id) { this.id = id; return this; }
 

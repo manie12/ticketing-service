@@ -1,6 +1,7 @@
 package io.ticketing.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -26,7 +27,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "ticket_attachments")
-public class TicketAttachmentEntity {
+public class TicketAttachmentEntity implements org.springframework.data.domain.Persistable<UUID> {
 
     @Id
     @Column("id")
@@ -64,6 +65,9 @@ public class TicketAttachmentEntity {
 
     @Column("created_at")
     private OffsetDateTime createdAt;
+
+    @Transient
+    private boolean isNew = false;
 
     public TicketAttachmentEntity() {
     }
@@ -108,7 +112,16 @@ public class TicketAttachmentEntity {
         a.storagePath = storagePath;
         return a;
     }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
 
+    public TicketAttachmentEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() {
         return id;
     }

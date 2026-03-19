@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-public interface CategoryRepository extends ReactiveCrudRepository<CategoryEntity, String> {
+public interface CategoryRepository extends ReactiveCrudRepository<CategoryEntity, UUID> {
     Mono<CategoryEntity> findByTenantIdAndCode(UUID tenantId, String code);
 }

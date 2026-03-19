@@ -4,10 +4,9 @@ package io.ticketing.model;
 // TICKETS
 // ============================================================
 
-import org.apache.kafka.common.protocol.types.Field;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -15,7 +14,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Table("tickets")
-public class TicketEntity {
+public class TicketEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -33,7 +32,7 @@ public class TicketEntity {
     @Column("customer_email")
     private String customerEmail;
 
-    @Column("channel_Code")
+    @Column("channel_code")
     private String channelCode;     // WEB | EMAIL | WHATSAPP | API | PHONE | IN_APP
 
     @Column("status")
@@ -42,7 +41,7 @@ public class TicketEntity {
     @Column("priority")
     private String priority;    // LOW | MEDIUM | HIGH | URGENT
 
-    @Column("category_Code")
+    @Column("category_code")
     private String categoryCode;    // optional categories table
 
     @Column("subject")
@@ -63,6 +62,9 @@ public class TicketEntity {
     @LastModifiedDate
     @Column("updated_at")
     private OffsetDateTime updatedAt;
+
+    @Transient
+    private boolean isNew = false;
 
     public TicketEntity() {
     }
@@ -105,7 +107,16 @@ public class TicketEntity {
         t.updatedAt = t.openedAt;
         return t;
     }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
 
+    public TicketEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() {
         return id;
     }
@@ -178,7 +189,7 @@ public class TicketEntity {
         return this;
     }
 
-    public UUID getCategoryCode() {
+    public String getCategoryCode() {
         return categoryCode;
     }
 

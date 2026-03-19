@@ -1,7 +1,7 @@
 package io.ticketing.datatype.status;
 
 public enum TicketStatus {
-    CREATED,
+    OPEN,
     PROCESSING,
     APPROVAL,
     APPROVED,

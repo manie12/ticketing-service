@@ -7,8 +7,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-public interface TicketRepository  extends ReactiveCrudRepository<TicketEntity, String> {
+public interface TicketRepository  extends ReactiveCrudRepository<TicketEntity, UUID> {
     Mono<Boolean> existsByTenantIdAndChannelCodeAndRequestId(UUID tenantId, String channelId, String requestId);
-    Mono<TicketEntity> findByTenantIdAndChannelIdAndRequestId(UUID tenantId, UUID channelId, String requestId);
+    Mono<TicketEntity> findByTenantIdAndChannelCodeAndRequestId(UUID tenantId, String channelId, String requestId);
 
 }

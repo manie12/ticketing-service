@@ -2,6 +2,7 @@ package io.ticketing.model;
 
 import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -28,7 +29,7 @@ import java.util.UUID;
  * )
  */
 @Table(schema = "ticketing", name = "ticket_events")
-public class TicketEventEntity {
+public class TicketEventEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -70,7 +71,8 @@ public class TicketEventEntity {
 
     @Column("created_at")
     private OffsetDateTime createdAt;
-
+    @Transient
+    private boolean isNew = false;
     public TicketEventEntity() {
     }
 
@@ -116,6 +118,16 @@ public class TicketEventEntity {
         return e;
     }
 
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public TicketEventEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
     public UUID getId() {
         return id;
     }

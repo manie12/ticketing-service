@@ -1,0 +1,46 @@
+-- -- V14__create_ticket_participants.sql
+-- -- Creates: ticketing.ticket_participants
+-- -- Matches TicketParticipantEntity columns exactly.
+-- -- Depends on: tenants (V2), tickets (V6)
+--
+-- CREATE TABLE IF NOT EXISTS ticketing.ticket_participants
+-- (
+--     id               UUID                                   NOT NULL
+--     PRIMARY KEY,
+--
+--     tenant_id        UUID                                   NOT NULL
+--     REFERENCES ticketing.tenants
+--     ON DELETE RESTRICT,
+--
+--     ticket_id        UUID                                   NOT NULL
+--     REFERENCES ticketing.tickets
+--     ON DELETE CASCADE,
+--
+--     participant_type VARCHAR(20)                            NOT NULL
+--     CONSTRAINT chk_participant_type
+--     CHECK (participant_type = ANY (ARRAY['CUSTOMER','AGENT','SYSTEM'])),
+--
+--     customer_email   VARCHAR(254),
+--
+--     role             VARCHAR(30)              DEFAULT 'REQUESTER' NOT NULL
+--     CONSTRAINT chk_participant_role
+--     CHECK (role = ANY (ARRAY['REQUESTER','ASSIGNEE','WATCHER'])),
+--
+--     is_primary       BOOLEAN                 DEFAULT FALSE  NOT NULL,
+--
+--     added_at         TIMESTAMPTZ             DEFAULT NOW()  NOT NULL
+-- );
+--
+-- -- Query helpers
+-- CREATE INDEX IF NOT EXISTS ix_ticket_participants_ticket
+--     ON ticketing.ticket_participants (ticket_id);
+--
+-- CREATE INDEX IF NOT EXISTS ix_ticket_participants_tenant_ticket
+--     ON ticketing.ticket_participants (tenant_id, ticket_id);
+--
+-- CREATE INDEX IF NOT EXISTS ix_ticket_participants_customer_email
+--     ON ticketing.ticket_participants (tenant_id, customer_email)
+--     WHERE customer_email IS NOT NULL;
+--
+-- -- For Debezium/logical decoding completeness if updates occur
+-- ALTER TABLE ticketing.ticket_participants REPLICA IDENTITY FULL;

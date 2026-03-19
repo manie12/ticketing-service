@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-public interface TicketMessageRepository extends ReactiveCrudRepository<TicketMessageEntity, String> {
+public interface TicketMessageRepository extends ReactiveCrudRepository<TicketMessageEntity, UUID> {
 
 
 }
