@@ -2,7 +2,6 @@ package io.ticketing.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.ticketing.datatype.ProductType;
 import io.ticketing.datatype.Visibility;
 
 import java.time.OffsetDateTime;
@@ -13,7 +12,6 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonInclude(NON_NULL)
 public record CreateProductRequest(
         String organizationId,
-        ProductType type,
 
         // Naming
         String title,

@@ -1,3 +1,6 @@
+// ========================================
+// 2) Update GlobalExceptionHandler to handle TicketException
+// ========================================
 package io.ticketing.exception;
 
 import io.ticketing.datatype.TicketErrorType;
@@ -70,6 +73,23 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.ok(body));
     }
 
+    /**
+     * NEW: Business exception mapping — returns the exact TicketErrorType code/message,
+     * and optional data if provided.
+     */
+    @ExceptionHandler(TicketException.class)
+    public Mono<ResponseEntity<HttpResponse<Object>>> handleTicketException(
+            TicketException ex,
+            ServerHttpRequest request
+    ) {
+        String requestId = resolveRequestId(request);
+
+        TicketErrorType type = ex.getErrorType() != null ? ex.getErrorType() : TicketErrorType.GENERIC_ERROR;
+        HttpResponse<Object> body = ResponseFactory.of(requestId, type, ex.getData());
+
+        return Mono.just(ResponseEntity.ok(body));
+    }
+
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<HttpResponse<Void>>> handleGeneric(
             Exception ex,
@@ -97,13 +117,11 @@ public class GlobalExceptionHandler {
         payload.put("message", "Validation failed");
 
         List<Map<String, Object>> errors = fieldErrors.stream()
-                .map(fe -> {
-                    return Map.of(
-                            "field", fe.getField(),
-                            "rejectedValue", fe.getRejectedValue(),
-                            "error", fe.getDefaultMessage()
-                    );
-                })
+                .map(fe -> Map.of(
+                        "field", fe.getField(),
+                        "rejectedValue", fe.getRejectedValue(),
+                        "error", fe.getDefaultMessage()
+                ))
                 .toList();
 
         payload.put("errors", errors);

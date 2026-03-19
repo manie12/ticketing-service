@@ -2,6 +2,8 @@ package io.ticketing.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.ticketing.datatype.TicketErrorType;
+import io.ticketing.exception.TicketException;
 import jakarta.validation.Validator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,20 +12,19 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.random.RandomGenerator;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class SharedUtils {
-    private final RandomGenerator randomGenerator;
     private final ObjectMapper objectMapper;
     private final Validator validator;
 
-    public SharedUtils(RandomGenerator randomGenerator, ObjectMapper objectMapper, Validator validator) {
-        this.randomGenerator = randomGenerator;
+    public SharedUtils(ObjectMapper objectMapper, Validator validator) {
         this.objectMapper = objectMapper;
         this.validator = validator;
     }
@@ -72,21 +73,21 @@ public class SharedUtils {
         return Period.between(dateOfBirth.toLocalDate(), currentDate.toLocalDate()).getYears();
     }
 
-    private String randomAlphaNumeric(int size) {
-        return this.randomGenerator.ints(48, 123)
-                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                .limit(size)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-    }
+//    private String randomAlphaNumeric(int size) {
+//        return this.randomGenerator.ints(48, 123)
+//                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+//                .limit(size)
+//                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+//                .toString();
+//    }
 
-    public String randomNumeric(int size) {
-        return this.randomGenerator.ints(48, 58)
-                .filter(i -> i <= 57)
-                .limit(size)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-    }
+//    public String randomNumeric(int size) {
+//        return this.randomGenerator.ints(48, 58)
+//                .filter(i -> i <= 57)
+//                .limit(size)
+//                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+//                .toString();
+//    }
 
     public boolean isNumeric(String s) {
         try {
@@ -99,6 +100,28 @@ public class SharedUtils {
             }
         } catch (Exception e) {
             return false;
+        }
+    }
+    public UUID generateTicketId() {
+        return UUID.randomUUID();
+    }
+
+    /**
+     * Generates a public reference ID for customers.
+     *
+     * MVP generator: TCK-YYYY-<8chars>
+     * In production, consider a DB sequence for monotonic IDs per tenant or global.
+     */
+    public String generatePublicId(OffsetDateTime nowUtc) {
+        String year = String.valueOf(nowUtc.getYear());
+        String shortId = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        return "TCK-" + year + "-" + shortId;
+    }
+    public UUID parseUuidOrThrow(String raw, TicketErrorType errorType) {
+        try {
+            return UUID.fromString(raw);
+        } catch (Exception e) {
+            throw TicketException.of(errorType);
         }
     }
 }

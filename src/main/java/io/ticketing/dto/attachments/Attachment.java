@@ -31,6 +31,7 @@ public class Attachment {
     @NotBlank
     private String tempStoragePath;
 
+
     @Pattern(regexp = "^[a-fA-F0-9]{64}$", message = "checksumSha256 must be 64 hex chars")
     private String checksumSha256;
 

@@ -1,6 +1,11 @@
 package io.ticketing.web.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.ticketing.dto.Ticket.TicketResponse;
+import io.ticketing.dto.category.Category;
+import io.ticketing.dto.channel.Channel;
+import io.ticketing.dto.customer.Customer;
+import io.ticketing.model.TicketEntity;
 import lombok.Data;
 import lombok.Getter;
 
@@ -26,5 +31,6 @@ public class HttpResponse<T> {
     public static <T> HttpResponse<T> of(String requestId, String statusCode, String statusMessage, String customerMessage, T data) {
         return new HttpResponse<>(requestId, statusCode, statusMessage, customerMessage, data);
     }
+
 
 }

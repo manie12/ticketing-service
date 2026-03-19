@@ -1,44 +1,32 @@
-// ============================================================
-// R2DBC ENTITIES (Spring Data R2DBC)
-// - Tenants (already done)
-// - Customers
-// - Tickets
-// - TicketMessages
-// - TicketAttachments
-// - TicketEvents
-// - Tags
-// - TicketTags
-// - Settings (independent scope+tenant_id)
-// - Channels (independent scope+tenant_id)
-// - BusinessRules (independent scope+tenant_id)
-// - Categories (independent scope+tenant_id)
-// - SlaPolicies (independent scope+tenant_id)
-// - TicketSla
-// - TicketParticipants
-// - TicketLinks
-//
-// Notes:
-// 1) R2DBC does NOT auto-handle relations like JPA; keep FKs as IDs.
-// 2) Use OffsetDateTime for timestamptz.
-// 3) For jsonb columns, use String (store JSON) or Json type converters.
-// ============================================================
-
 package io.ticketing.model;
 
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-// ============================================================
-// CUSTOMERS
-// ============================================================
-@Table("customers")
-public class CustomerEntity {
+/**
+ * R2DBC entity for ticketing.customers
+ * <p>
+ * DDL (summary):
+ * customers(
+ * id uuid PK,
+ * tenant_id uuid NOT NULL FK tenants(id),
+ * customer_code varchar(80) NULL,
+ * full_name varchar(200) NOT NULL,
+ * email varchar(254) NULL,
+ * phone_e164 varchar(20) NULL (E.164 check),
+ * preferred_channel varchar(40) NULL,
+ * status varchar(20) NOT NULL default 'ACTIVE' check in (ACTIVE,SUSPENDED,DELETED),
+ * created_at timestamptz NOT NULL default now(),
+ * updated_at timestamptz NOT NULL default now()
+ * )
+ */
+@Table(schema = "ticketing", name = "customers")
+public class CustomerEntity implements org.springframework.data.domain.Persistable<UUID>{
 
     @Id
     @Column("id")
@@ -47,69 +35,156 @@ public class CustomerEntity {
     @Column("tenant_id")
     private UUID tenantId;
 
-    @Column("public_id")
-    private String publicId;
+    @Column("customer_code")
+    private String customerCode;
 
-    @Column("external_customer_id")
-    private String externalCustomerId;
-
-    @Column("display_name")
-    private String displayName;
+    @Column("full_name")
+    private String fullName;
 
     @Column("email")
     private String email;
 
-    @Column("phone")
-    private String phone;
+    @Column("phone_e164")
+    private String phoneE164;
 
-    @CreatedDate
+    @Column("preferred_channel")
+    private String preferredChannel;
+
+    @Column("status")
+    private String status; // ACTIVE | SUSPENDED | DELETED
+
     @Column("created_at")
     private OffsetDateTime createdAt;
 
-    public CustomerEntity() {}
+    @Column("updated_at")
+    private OffsetDateTime updatedAt;
 
-    public CustomerEntity(UUID id, UUID tenantId, String publicId, String externalCustomerId,
-                          String displayName, String email, String phone, OffsetDateTime createdAt) {
-        this.id = id;
-        this.tenantId = tenantId;
-        this.publicId = publicId;
-        this.externalCustomerId = externalCustomerId;
-        this.displayName = displayName;
-        this.email = email;
-        this.phone = phone;
-        this.createdAt = createdAt;
+    @Transient
+    private boolean isNew = false;
+
+    public CustomerEntity() {
     }
 
-    public static CustomerEntity newCustomer(UUID tenantId, String publicId, String displayName) {
+    public CustomerEntity(UUID id, UUID tenantId, String customerCode, String fullName, String email,
+                          String phoneE164, String preferredChannel, String status,
+                          OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        this.id = id;
+        this.tenantId = tenantId;
+        this.customerCode = customerCode;
+        this.fullName = fullName;
+        this.email = email;
+        this.phoneE164 = phoneE164;
+        this.preferredChannel = preferredChannel;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public static CustomerEntity newCustomer(UUID tenantId, String fullName) {
         CustomerEntity c = new CustomerEntity();
         c.id = UUID.randomUUID();
         c.tenantId = tenantId;
-        c.publicId = publicId;
-        c.displayName = displayName;
+        c.fullName = fullName;
+        c.status = "ACTIVE";
         return c;
     }
+    @Override
+    @Transient
+    public boolean isNew() {
+        return isNew;
+    }
 
-    public UUID getId() { return id; }
-    public CustomerEntity setId(UUID id) { this.id = id; return this; }
+    public CustomerEntity markNew() {
+        this.isNew = true;
+        return this;
+    }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getTenantId() { return tenantId; }
-    public CustomerEntity setTenantId(UUID tenantId) { this.tenantId = tenantId; return this; }
+    public CustomerEntity setId(UUID id) {
+        this.id = id;
+        return this;
+    }
 
-    public String getPublicId() { return publicId; }
-    public CustomerEntity setPublicId(String publicId) { this.publicId = publicId; return this; }
+    public UUID getTenantId() {
+        return tenantId;
+    }
 
-    public String getExternalCustomerId() { return externalCustomerId; }
-    public CustomerEntity setExternalCustomerId(String externalCustomerId) { this.externalCustomerId = externalCustomerId; return this; }
+    public CustomerEntity setTenantId(UUID tenantId) {
+        this.tenantId = tenantId;
+        return this;
+    }
 
-    public String getDisplayName() { return displayName; }
-    public CustomerEntity setDisplayName(String displayName) { this.displayName = displayName; return this; }
+    public String getCustomerCode() {
+        return customerCode;
+    }
 
-    public String getEmail() { return email; }
-    public CustomerEntity setEmail(String email) { this.email = email; return this; }
+    public CustomerEntity setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
+        return this;
+    }
 
-    public String getPhone() { return phone; }
-    public CustomerEntity setPhone(String phone) { this.phone = phone; return this; }
+    public String getFullName() {
+        return fullName;
+    }
 
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public CustomerEntity setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; return this; }
+    public CustomerEntity setFullName(String fullName) {
+        this.fullName = fullName;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public CustomerEntity setEmail(String email) {
+        this.email = email;
+        return this;
+    }
+
+    public String getPhoneE164() {
+        return phoneE164;
+    }
+
+    public CustomerEntity setPhoneE164(String phoneE164) {
+        this.phoneE164 = phoneE164;
+        return this;
+    }
+
+    public String getPreferredChannel() {
+        return preferredChannel;
+    }
+
+    public CustomerEntity setPreferredChannel(String preferredChannel) {
+        this.preferredChannel = preferredChannel;
+        return this;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public CustomerEntity setStatus(String status) {
+        this.status = status;
+        return this;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public CustomerEntity setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
+    public OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public CustomerEntity setUpdatedAt(OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+        return this;
+    }
 }
